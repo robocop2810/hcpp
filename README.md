@@ -3,9 +3,9 @@
 
 # Dependancies
 - cc
-
+- linux (microslop support might come later)
 # Setup
-first you need to bootstrap the executable, after this it will automatically recompile itself on changes in the provided hcml file. 
+To start the server run the following bootstrapping command:
 ```bash
-cc ./src/hcpp.c ./src/libs/*.c -o build/hcpp && ./build/hcpp ./[FILENAME].hcml ./src/temp.h
+cc ./src/hcpp.c ./src/libs/*.c -o build/hcpp && ./build/hcpp ./[FILENAME].hcml on
 ```
