@@ -21,24 +21,24 @@ char *intToStr(int in){
 char *responseBuilder(){
 	char *responce = malloc(10000 * sizeof(char));
 	strcpy(responce, "HTTP/1.1 200 OK\r\nServer: hcpp\r\nConnection: Keep-Alive\r\n"
-                     "Keep-Alive: timeout=5, max=500\r\n"
-                     "Content-Type: text/html; charset=UTF-8\r\n\r\n");
-	#define html_out(x) strcat(responce, x)
-	#define int(x) { \
-		char *tmp = intToStr(x); \
-		strcat(responce, tmp); \
-		free(tmp); \
-	}
-	#include "../temp.h"
-	#undef html_out
-	#undef int
-	return responce;
+			"Keep-Alive: timeout=5, max=500\r\n"
+			"Content-Type: text/html; charset=UTF-8\r\n\r\n");
+#define html_out(x) strcat(responce, x)
+#define int(x) { \
+	char *tmp = intToStr(x); \
+	strcat(responce, tmp); \
+	free(tmp); \
 }
+#include "../temp.h"
+#undef html_out
+#undef int
+	return responce;
+	}
 
 void convertTemplate(char *fileContents, char *headerName){
 	uint8_t state = 0; 		    // 0 html mode 1 c mode
 	FILE* temp = fopen(headerName, "w+"); // make new header file
-					    
+
 	fprintf(temp, "%s", "html_out(\"");
 	do{
 		if(*fileContents == '%'){
@@ -64,18 +64,18 @@ char *readFileString(char *filename){
 	assert(filename != NULL);
 	FILE* file = fopen(filename, "r");
 	assert(file != NULL && "ERROR: failed to open file");
-	
+
 	fseek(file, 0L, SEEK_END);
 	long int fLength = ftell(file);
 	rewind(file);
-	
+
 	printf("INFO: opened file %s, it has %ld chars. \n", filename, fLength);
-	
+
 	char *buffer = malloc(fLength * sizeof(char));
 	assert(buffer != NULL && "Buy more ram dummy :3");
-	
+
 	size_t readSize = fread(buffer, 1, fLength, file);
-	
+
 	buffer[readSize] = '\0';	
 
 	fclose(file);
@@ -84,22 +84,30 @@ char *readFileString(char *filename){
 
 
 void rebuildYourself(char *executable, char *hcmlFile, int current_socket){
-    if(strlen(hcmlFile) > 1000) return;
+	if(strlen(hcmlFile) > 1000) return;
 
-    char command[1024];
-    snprintf(command, sizeof(command), "cc ./src/hcpp.c ./src/libs/*.c -o build/hcpp"); 		
-    
-    printf("Recompiling...\n");
-    if(system(command) == 0){
-        printf("INFO: Compiled successfully! Restarting...\n");
-        
-        close(current_socket);
+	char command[1024];
+	
+	snprintf(command, sizeof(command), "%s %s off", executable, hcmlFile); 		
+	printf("INFO: Translating [%s]...\n", hcmlFile);
+	if(system(command) == 0){
+		printf("INFO: Translation completed successfully!\n");
+	}
 
-        char *args[] = { executable, hcmlFile, "./src/temp.h", NULL };
-        execvp(executable, args);
-    } else {
-        printf("ERROR: Compilation failed.\n");
-    }
+
+	snprintf(command, sizeof(command), "cc ./src/hcpp.c ./src/libs/*.c -o %s", executable); 		
+
+	printf("INFO: Recompiling server...\n");
+	if(system(command) == 0){
+		printf("INFO: Compiled server successfully! Restarting...\n");
+
+		close(current_socket);
+
+		char *args[] = { executable, hcmlFile, "on", NULL };
+		execvp(executable, args);
+	} else {
+		printf("ERROR: Compilation of server failed.\n");
+	}
 }
 
 
